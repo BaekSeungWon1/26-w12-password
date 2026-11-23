@@ -25,8 +25,8 @@
 
 ## 실행 및 배포 링크
 
-- Netlify 배포 URL: (배포 후 입력)
-- GitHub Pages 배포 URL: (배포 후 입력)
+- Netlify 배포 URL: https://26-w12-passwd.netlify.app/
+- GitHub Pages 배포 URL: https://baekseungwon1.github.io/26-w12-password/
 
 ## 나만의 확장 기능
 
