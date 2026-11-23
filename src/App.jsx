@@ -1,122 +1,96 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import PasswordChecker from './components/PasswordChecker';
+import PasswordGenerator from './components/PasswordGenerator';
+import Vault from './components/Vault';
+import SecurityGuide from './components/SecurityGuide';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeTab, setActiveTab] = useState('checker');
+  const [password, setPassword] = useState('');
+
+  // 테마 상태 초기화: localStorage에 테마 이름만 보관(비밀번호 절대 미보관)
+  const [theme, setTheme] = useState(() => {
+    try {
+      const savedTheme = localStorage.getItem('cybersec_theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme;
+      }
+    } catch {
+      // localStorage 접근 불가 시 fallback
+    }
+
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: light)').matches
+    ) {
+      return 'light';
+    }
+    return 'dark'; // 기본값 다크 모드
+  });
+
+  // 테마 변경 시 html 태그 속성 및 localStorage 동기화
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('cybersec_theme', theme);
+    } catch {
+      // fallback
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // 생성기에서 "이 비밀번호 바로 점검하기" 클릭 시 호출
+  const handleUsePassword = (generatedPwd) => {
+    setPassword(generatedPwd);
+    setActiveTab('checker');
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="dashboard-layout">
+      {/* 최상단 헤더 및 네비게이션 */}
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        theme={theme}
+        toggleTheme={toggleTheme}
+      />
 
-      <div className="ticks"></div>
+      {/* 대시보드 메인 본문 콘텐츠 */}
+      <main className="dashboard-main">
+        {activeTab === 'checker' && (
+          <PasswordChecker
+            password={password}
+            setPassword={setPassword}
+          />
+        )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {activeTab === 'generator' && (
+          <PasswordGenerator onUsePassword={handleUsePassword} />
+        )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {activeTab === 'vault' && <Vault />}
+      </main>
+
+      {/* 사이버보안 가이드 & 개념 아코디언 */}
+      <SecurityGuide />
+
+      {/* 푸터 */}
+      <footer className="dashboard-footer">
+        <p>
+          한국폴리텍대학 강서캠퍼스 사이버보안과 실습 프로젝트 | Web Crypto API & k-익명성 보안 대시보드
+        </p>
+        <p className="footer-sub">
+          보안 원칙: Zero Storage, Client-side Evaluation, CSPRNG Random Generation, 5-Char Prefix Range Query
+        </p>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
